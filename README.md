@@ -111,3 +111,9 @@ An example or a row of data:
                 timestamp  variable      value         last_modified_utc
 2024-06-20 00:00:00+00:00       850  40.995896 2024-06-20 00:00:00+00:00
 ```
+
+### Data output
+
+Transformed data is written to the local disk in file format [parquet](https://parquet.apache.org/).
+
+See `./output` directory after running the application.
