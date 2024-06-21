@@ -1,15 +1,13 @@
+import urllib
 import urllib.error
 from datetime import date
 from unittest.mock import Mock, patch
 
-import urllib
-
+import pandas as pd
 import pytest
 
-from extractors.error import ResourceDownError
-import pandas as pd
-
 from extractors.core import DateInterval
+from extractors.error import ResourceDownError
 from extractors.weather import (
     WeatherExtractionType,
     clean_columns,
@@ -85,12 +83,6 @@ def test_run_wind_extraction(mock_read_csv):
 @patch("extractors.weather.pd.read_csv")
 def test_run_wind_extraction_api_failure(mock_read_csv: Mock, mock_sleep: Mock):
     timespan = DateInterval(date(2024, 6, 20), date(2024, 6, 20))
-    data = {
-        "Naive_Timestamp ": [1717977600000],
-        " Variable": [991],
-        "value": [31.4485644825],
-        "Last Modified utc": [1717977600000],
-    }
     # simulate an HTTPError
     mock_read_csv.side_effect = urllib.error.HTTPError(
         "url", 429, "api is dead", Mock(), Mock()

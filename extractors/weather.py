@@ -1,4 +1,5 @@
 import enum
+import logging as log
 import time
 import urllib
 import urllib.error
@@ -6,34 +7,37 @@ import uuid
 from typing import Callable
 
 import pandas as pd
-import logging as log
 
 from .core import DateInterval, write_to_file
 from .error import InvalidDateError, ResourceDownError
 
+# weather API configuraiton
+# retries are performed when API unresponsive using these configurations
+WEATHER_API_ENDPOINT = "http://localhost:8000"
 MAX_RETRIES = 3
 RETRY_DELAY_SEC = 1
 
+# extractor output is written to disk
 OUTPUT_DIR = "./output"
 
 
-WEATHER_API_ENDPOINT = "http://localhost:8000"
-
-
 def run_weather_extractors(timespan: DateInterval, api_key: str):
-    """Run all weather extractors for a particular date range.
+    """Extracts weather data for a particular timespan and writes output to file.
 
     Args:
-        from_date (datetime.date): start date to run from
-        to_date (datetime.date): until end date
+        timespan (DateInterval): Timespan with date range
+        api_key (str): API key to use to fetch data
+
+    Raises:
+        InvalidDateError: Raised when timespan is invalid
     """
-    # extract solar then extract wind
     if timespan.to_date < timespan.from_date:
         raise InvalidDateError()
 
     log.info(f"extracting data for timespan: {timespan}")
 
     output_type = "parquet"
+    # extract solar and then extract wind
     extractors = {
         WeatherExtractionType.SOLAR: run_solar_extraction,
         WeatherExtractionType.WIND: run_wind_extraction,
@@ -50,6 +54,15 @@ def run_weather_extractors(timespan: DateInterval, api_key: str):
 
 
 def run_solar_extraction(timespan: DateInterval, api_key: str) -> pd.DataFrame:
+    """Extracts solar data from weather api and returns them as a DataFrame.
+
+    Args:
+        timespan (DateInterval): Date range for which data is extracted
+        api_key (str): API key to use to fetch data
+
+    Returns:
+        pd.DataFrame: Combined solar data across timespan specified
+    """
     frames = []
     for date in timespan.get_date_range():
         url = get_data_url(
@@ -64,6 +77,15 @@ def run_solar_extraction(timespan: DateInterval, api_key: str) -> pd.DataFrame:
 
 
 def run_wind_extraction(timespan: DateInterval, api_key: str) -> pd.DataFrame:
+    """Extracts wind data from weather api and returns them as a DataFrame.
+
+    Args:
+        timespan (DateInterval): Date range for which data is extracted
+        api_key (str): API key to use to fetch data
+
+    Returns:
+        pd.DataFrame: Combined wind data across timespan specified
+    """
     frames = []
     for date in timespan.get_date_range():
         url = get_data_url(
@@ -83,6 +105,19 @@ class WeatherExtractionType(enum.Enum):
 def get_data_url(
     extraction_type: WeatherExtractionType, date: str, api_key: str
 ) -> str:
+    """Return appropriate API location of weather data type
+
+    Args:
+        extraction_type (WeatherExtractionType): Weather data type
+        date (str): API request parameter date
+        api_key (str): API key to use to fetch data
+
+    Raises:
+        NotImplementedError: raised when extraction_type is not recognized
+
+    Returns:
+        str: absolute http url to GET data from
+    """
     paths = {
         WeatherExtractionType.SOLAR: "solargen.json",
         WeatherExtractionType.WIND: "windgen.csv",
@@ -96,6 +131,18 @@ def get_data_url(
 def make_output_filepath(
     timespan: DateInterval, extraction_type: WeatherExtractionType, filetype: str
 ) -> str:
+    """Returns a local filepath where weather output data can be stored.
+
+    Example path structure: solar/year=2024/month=06/day=18/datafile.parquet
+
+    Args:
+        timespan (DateInterval): Timespan that extraction ran on
+        extraction_type (WeatherExtractionType): Type of extracted data
+        filetype (str): Output file type: json,parquet
+
+    Returns:
+        str: Filepath on local filesystem
+    """
     week_format = timespan.from_date.strftime("year=%Y/month=%m/day=%d")
     path_to_output = f"{OUTPUT_DIR}/{extraction_type.value}/{week_format}"
     filepath = f"{path_to_output}/data-{uuid.uuid4()}.{filetype}"
@@ -103,6 +150,14 @@ def make_output_filepath(
 
 
 def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Renames and validates columns of data frame returning a clean one.
+
+    Args:
+        df (pd.DataFrame): Dataframe with raw data from weather endpoints
+
+    Returns:
+        pd.DataFrame: Dataframe with standardized columns
+    """
     # rename columns to cleaner names
     column_mapping = {
         "Naive_Timestamp ": "timestamp",

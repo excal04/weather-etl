@@ -1,9 +1,14 @@
-from argparse import ArgumentParser
-from datetime import date, timedelta
-from extractors.core import DateInterval
-from extractors.error import InvalidDateError, ResourceDownError
 import logging as log
 import os
+from argparse import ArgumentParser
+from datetime import date, timedelta
+
+from extractors import (
+    DateInterval,
+    InvalidDateError,
+    ResourceDownError,
+    run_weather_extractors,
+)
 
 log.basicConfig(level=log.DEBUG)
 
@@ -25,8 +30,7 @@ def main():
     args = parser.parse_args()
     if not args.from_:
         args.from_ = args.to - timedelta(days=7)
-    log.info(f"transforming data within range {args.from_} -> {args.to}")
-    from extractors.weather import run_weather_extractors
+    log.debug(f"transforming data in range {args.from_} -> {args.to}")
 
     # get API key from environment
     api_key = os.getenv("WEATHER_API_KEY")
@@ -37,7 +41,7 @@ def main():
     except InvalidDateError:
         parser.error("FROM date must be before TO date")
     except ResourceDownError:
-        print("extractor cannot finish")
+        log.error("extractor failed: cannot fetch data from remote resource")
         raise
 
 
@@ -47,7 +51,3 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     print("--- %s seconds ---" % (time.time() - start_time))
-
-
-# todo:
-# dcoumnetaion
