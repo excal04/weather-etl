@@ -4,7 +4,7 @@ Basic ETL application for weather data. This project is created for demonstratio
 
 ## Getting Started
 
-1. This project runs in [python](https://www.python.org/downloads/), setup your python environment along with [pip](https://pip.pypa.io/en/stable/installation/) for package management. Install all the requirements.
+1. This project runs in [python >= 3.9](https://www.python.org/downloads/), setup your python environment along with [pip](https://pip.pypa.io/en/stable/installation/) for package management. Install all the requirements.
     
     ```sh
     $ pip install -r requirements.txt
@@ -23,7 +23,7 @@ Basic ETL application for weather data. This project is created for demonstratio
     You have to export an environment variable with an api key: `WEATHER_API_KEY='ADU8S67Ddy!d7f?'`. This provides the ETL application access to the web api data source.
 
     ```sh
-    $ WEATHER_API_KEY='ADU8S67Ddy!d7f?' python main.py 
+    $ WEATHER_API_KEY='ADU8S67Ddy!d7f?' python main.py
     ```
 
     Command line options can be set on main.py, see `python main.py -h` for more information. By default it runs ETL for 1 week of data until the current day.
@@ -46,6 +46,7 @@ The following are the common workflows that you'll need:
 $ poetry install
 
 # running the etl application
+# export WEATHER_API_KEY as necessary
 $ poetry run python main.py
 
 # you can also drop into the virtualenv and omit poetry run in your commands
