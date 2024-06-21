@@ -3,12 +3,12 @@ from datetime import date, timedelta
 from extractors.core import DateInterval
 from extractors.error import InvalidDateError, ResourceDownError
 import logging as log
+import os
 
 log.basicConfig(level=log.DEBUG)
 
 
 def main():
-    # argparse accept arguments
     parser = ArgumentParser()
     parser.add_argument(
         "--from",
@@ -28,8 +28,10 @@ def main():
     log.info(f"transforming data within range {args.from_} -> {args.to}")
     from extractors.weather import run_weather_extractors
 
-    # todo: get from env
-    api_key = "ADU8S67Ddy!d7f?"
+    # get API key from environment
+    api_key = os.getenv("WEATHER_API_KEY")
+    if not api_key:
+        raise RuntimeError("ENV variable `WEATHER_API_KEY` required")
     try:
         run_weather_extractors(DateInterval(args.from_, args.to), api_key)
     except InvalidDateError:
@@ -49,4 +51,3 @@ if __name__ == "__main__":
 
 # todo:
 # dcoumnetaion
-# logging
