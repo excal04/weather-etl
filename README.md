@@ -16,19 +16,19 @@ Basic ETL application for weather data. This project is created for demonstratio
     $ python -m uvicorn api_data_source.main:app --reload
     ```
 
-More information on the api data source can be found in [README.api.md](README.api.md).
+    More information on the api data source can be found in [README.api.md](README.api.md).
 
 3. Once the web backend is running, on another terminal, run the ETL application.
 
-You have to export an environment variable with an api key: `WEATHER_API_KEY='ADU8S67Ddy!d7f?'`. This provides the ETL application access to the web api data source.
+    You have to export an environment variable with an api key: `WEATHER_API_KEY='ADU8S67Ddy!d7f?'`. This provides the ETL application access to the web api data source.
 
     ```sh
     $ WEATHER_API_KEY='ADU8S67Ddy!d7f?' python main.py 
     ```
 
-Command line options can be set on main.py, see `python main.py -h` for more information. By default it runs ETL for 1 week of data until the current day.
+    Command line options can be set on main.py, see `python main.py -h` for more information. By default it runs ETL for 1 week of data until the current day.
 
-ETL output is found in the `./output` directory.
+    ETL output is found in the `./output` directory.
 
 ## Development
 
